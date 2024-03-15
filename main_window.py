@@ -30,8 +30,9 @@ class UpdateThread(QThread):
             with Listener(on_click=on_click) as listener:
                 listener.join()
 class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, clipboard, parent=None):
+        super(MainWindow, self).__init__(parent)
+        self.clipboard = clipboard  # 存储传入的clipboard对象
         self.setGeometry(100, 500, 500,700)
 
 
@@ -90,31 +91,41 @@ class MainWindow(QMainWindow):
     def check_clipboard(self,text):
 
        # print(self.checkbox.isChecked())
+       #  print('click')
         if not self.checkbox.isChecked():
             pass
            # print("未勾选")
         else:
             if self.checkbox2.isChecked():
-                pyautogui.hotkey("ctrl","c")
+                # print('1')
 
-            clipboard = pyperclip.paste()
+                pyautogui.hotkey("ctrl","c")
+            # print('2')
+
+            clipboard =  self.clipboard.text()
+            # print('3')
+
             if isinstance(clipboard,str) and len(clipboard)<3000:
 
                 if "\n" in clipboard:
-
+                    # print('4')
 
                     clipboard = re.sub(r'\s+', ' ', clipboard.strip())
-
+                # print('5')
 
                 # 如果剪贴板内容发生变化，更新文本框中的内容
                 if clipboard != self.clipboard_text:
-                    print(clipboard)
+
                     self.clipboard_text = clipboard
+                    translation=translator.translate(self.clipboard_text)
+                    print(clipboard)
+                    print(translation)
                     try:
+
                         if self.checkbox3.isChecked():
-                            self.textbox.setText(translator.translate(self.clipboard_text)+'\n'+self.clipboard_text)
+                            self.textbox.setText(translation+'\n'+self.clipboard_text)
                         else:
-                            self.textbox.setText(translator.translate(self.clipboard_text))
+                            self.textbox.setText(translation)
                     except:
                         print("error")
 
@@ -155,6 +166,7 @@ class MainWindow(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = MainWindow()
+    clipboard = app.clipboard()
+    window = MainWindow(clipboard)
     window.show()
     sys.exit(app.exec_())
